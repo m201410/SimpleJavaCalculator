@@ -1,0 +1,13 @@
+language: java
+
+jdk:
+  - oraclejdk7
+
+env:
+  - TERM=dumb
+
+before_install:
+  - chmod a+x gradlew
+
+script:
+  - ./gradlew test
