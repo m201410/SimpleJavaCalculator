@@ -66,8 +66,7 @@ public class Main {
 
     /**
      * Retrive verbosity level from argument list. Otherwise return current default level.
-     * Note: will delete the argument from the list if verbosity level is present and level is retrieved.
-     * @param args -- A valid verbosity level should be looking like: '-v2 "add(1, 2)"'
+     * @param args -- A valid input argument string with verbosity level should be looking like: '-v2 "add(1, 2)"'
      * @return the level if present, otherwise current default level.
      */
     private static VerbosityLevel getVerbosityLevel(String[] args) {
@@ -80,7 +79,6 @@ public class Main {
             int newLevel = Integer.parseInt(levelStr);
             if (LogUtil.VerbosityLevel.isValid(newLevel)) {
                 level = VerbosityLevel.fromInt(newLevel);
-                args = Arrays.copyOfRange(args, 1, args.length);
             }
         }
 
