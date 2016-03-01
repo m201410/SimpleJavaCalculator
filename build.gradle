@@ -42,3 +42,10 @@ compileJava {
     //enable incremental compilation
     options.incremental = false
 }
+
+test {
+    testLogging {
+        events 'started', 'passed'
+    }
+    include 'org/mdeng/**'
+}

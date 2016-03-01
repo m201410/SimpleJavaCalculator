@@ -22,6 +22,9 @@ package org.mdeng.assignment_sig;
  *
  */
 
+import static org.mdeng.assignment_sig.LogUtil.log;
+import static org.mdeng.assignment_sig.LogUtil.VerbosityLevel;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -53,14 +56,21 @@ public class Expression {
      */
     private String mString;
     /**
-     * Variables defined in the current scope.
+     * Variables defined in the current scope, with variable name as hash key and variable value as hash value.
      */
     private HashMap<String, Integer> mVariables = new HashMap<>();
 
+    /**
+     * @param str - the string to be evaluated.
+     */
     public Expression(final String str) {
         mString = str;
     }
 
+    /**
+     * @param str - the string to be evaluated.
+     * @param variables - Variables defined in enclosing scope, with variable name as hash key and variable value as hash value.
+     */
     public Expression(final String str, final HashMap<String, Integer> variables) {
         mString = str;
         mVariables = new HashMap<>();
@@ -76,7 +86,10 @@ public class Expression {
      *
      * @return the calculated result of the expression
      */
-    public int parse() {
+    int parse() {
+        log(VerbosityLevel.DEBUG, "parse(): ###" + mString + "###");
+        int retValue = Integer.MIN_VALUE;
+
         Matcher m = PATTERN_EXPRESSION_OP.matcher(mString);
         if (m.find()) {
             String op = m.group(1);
@@ -87,17 +100,22 @@ public class Expression {
             Expression expression2 = new Expression(args[1], mVariables);
 
             if (op.equals(OP_ADD)) {
-                return expression1.parse() + expression2.parse();
+                retValue = expression1.parse() + expression2.parse();
             } else if (op.equals(OP_SUB)) {
-                return expression1.parse() - expression2.parse();
+                retValue = expression1.parse() - expression2.parse();
             } else if (op.equals(OP_MULT)) {
-                return expression1.parse() * expression2.parse();
+                retValue = expression1.parse() * expression2.parse();
             } else if (op.equals(OP_DIV)) {
-                return expression1.parse() / expression2.parse();
+                retValue = expression1.parse() / expression2.parse();
+            } else {
+                // Shouldn't reach here.
+                String errMsg = "Internal Error";
+                log(VerbosityLevel.ERROR, "parse(): ###" + mString + "### returns " + errMsg);
+                throw new RuntimeException(errMsg);
             }
 
-            // Shouldn't reach here.
-            throw new RuntimeException("Internal Error");
+            log(VerbosityLevel.DEBUG, "parse(): ###" + mString + "### returns " + retValue);
+            return retValue;
         }
 
         m = PATTERN_EXPRESSION_LET.matcher(mString);
@@ -113,7 +131,9 @@ public class Expression {
 
             Expression expression = new Expression(args[1], mVariables);
 
-            return expression.parse();
+            retValue = expression.parse();
+            log(VerbosityLevel.DEBUG, "parse(): ###" + mString + "### returns " + retValue);
+            return retValue;
         }
 
         m = PATTERN_VARIABLE.matcher(mString);
@@ -121,22 +141,32 @@ public class Expression {
             String variableName = m.group(1);
 
             if (mVariables.containsKey(variableName)) {
-                return mVariables.get(variableName);
+                retValue =  mVariables.get(variableName);
+                log(VerbosityLevel.DEBUG, "parse(): ###" + mString + "### returns " + retValue);
+                return retValue;
             } else {
-                throw new RuntimeException("Invalid input - invalid variable name: " + variableName);
+                String errMsg = "Invalid input - invalid variable name: " + variableName;
+                log(VerbosityLevel.INFO, errMsg);
+                throw new RuntimeException(errMsg);
             }
         }
 
         m = PATTERN_NUMBER.matcher(mString);
         if (m.find()) {
             try {
-                return Integer.parseInt(m.group(1));
+                retValue = Integer.parseInt(m.group(1));
+                log(VerbosityLevel.DEBUG, "parse(): ###" + mString + "### returns " + retValue);
+                return retValue;
             } catch (NumberFormatException e) {
-                throw new RuntimeException("Invalid input - invalid number format!", e);
+                String errMsg = "Invalid input - invalid number format! " + e.toString();
+                log(VerbosityLevel.INFO, errMsg);
+                throw new RuntimeException(errMsg);
             }
         }
 
-        throw new RuntimeException("Invalid input!");
+        String errMsg = "Invalid input!";
+        log(VerbosityLevel.INFO, errMsg);
+        throw new RuntimeException(errMsg);
     }
 
     /**
@@ -167,4 +197,5 @@ public class Expression {
 
         throw new RuntimeException("Invalid input - \"" + str + "\" should be two expression separated by comma!");
     }
+
 }

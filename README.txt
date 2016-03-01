@@ -20,3 +20,19 @@ Arithmetic functions: add, sub, mult, div, each taking two arbitrary expression
 A “let” operator for assigning values to variables:
 	let(<variable name>, <value expression>, <expression where variable is used>)
 As with arithmetic functions, the value expression and the expression where the variable is used may be an arbitrary expression from this list. 
+
+Following are helpful comments about how to quickly run this project.
+
+Gradle tasks:
+To build Jar file:
+    gradlew clean build
+To compile classes:
+    gradlew clean compileJava
+To run all unit tests:
+    gradlew clean test
+To run individual unit test:
+    gradlew -Dtest.single=Expression test
+
+
+To run from command line, build Jar file first with Gradle(see above) then run as following command:
+    java -classpath build\libs\assignment_sig1-1.0-SNAPSHOT.jar org.mdeng.assignment_sig.Main -v1 "add(100, -10)"

@@ -21,14 +21,69 @@ package org.mdeng.assignment_sig;
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.mdeng.assignment_sig.LogUtil.log;
+import static org.mdeng.assignment_sig.LogUtil.VerbosityLevel;
+
 public class Main {
+    /** for unit test */
+    static VerbosityLevel mCurrentLevel = VerbosityLevel.ERROR;
+    /** for unit test */
+    static String mExpressionString = new String();
+
     public static void main(String[] args) {
-        if (args.length != 1) {
-            throw new RuntimeException("Invalid input - having more than one expressions!");
+        LogUtil.setVerbosityLevel(mCurrentLevel);
+
+        if (args.length < 1) {
+            String errorMsg = "Invalid input - need at lease one string as expression";
+            log(VerbosityLevel.INFO, errorMsg);
+            throw new RuntimeException(errorMsg);
         }
 
-        Expression expression = new Expression(args[0]);
+        for(int i = 0; i < args.length; i++) {
+            log(VerbosityLevel.DEBUG, "input argument[" + i + "]: ###" + args[i] + "###");
+        }
+
+        boolean havingVerbosity = false;
+        VerbosityLevel assignedLevel = getVerbosityLevel(args);
+        if (assignedLevel != VerbosityLevel.INVALID && assignedLevel != LogUtil.getVerbosityLevel()) {
+            mCurrentLevel = assignedLevel;
+            LogUtil.setVerbosityLevel(assignedLevel);
+            log(VerbosityLevel.DEBUG, "Verbosity is set to level " + assignedLevel.getValue());
+            havingVerbosity = true;
+        }
+
+        mExpressionString = args[havingVerbosity ? 1 : 0];
+        log(VerbosityLevel.INFO, "input expression: ###" + mExpressionString + "###");
+        Expression expression = new Expression(mExpressionString);
         int value = expression.parse();
         System.out.println(value);
+    }
+
+    /**
+     * Retrive verbosity level from argument list. Otherwise return current default level.
+     * Note: will delete the argument from the list if verbosity level is present and level is retrieved.
+     * @param args -- A valid verbosity level should be looking like: '-v2 "add(1, 2)"'
+     * @return the level if present, otherwise current default level.
+     */
+    private static VerbosityLevel getVerbosityLevel(String[] args) {
+        VerbosityLevel level = LogUtil.getVerbosityLevel();
+
+        final Pattern pattern = Pattern.compile("-v(\\d)");
+        Matcher m = pattern.matcher(args[0]);
+        if (m.find()) {
+            final String levelStr = m.group(1);
+            int newLevel = Integer.parseInt(levelStr);
+            if (LogUtil.VerbosityLevel.isValid(newLevel)) {
+                level = VerbosityLevel.fromInt(newLevel);
+                args = Arrays.copyOfRange(args, 1, args.length);
+            }
+        }
+
+        return level;
     }
 }
